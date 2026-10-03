@@ -161,3 +161,10 @@ def test_trace_has_no_key_or_prompt(env):
     raw = json.dumps(lines())
     assert "sk-or-" not in raw and "secret prompt text" not in raw
     assert s.headers[0]["Authorization"].endswith("testkey")  # the key is sent, just never logged
+
+
+def test_any_json_uses_json_object_mode(env):
+    call, _, _, _ = env
+    s = Session(ok('{"a": 1}'))
+    content, _ = call(s, schema=llm.ANY_JSON)
+    assert content == {"a": 1} and s.bodies[0]["response_format"] == {"type": "json_object"}

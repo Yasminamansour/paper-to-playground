@@ -76,3 +76,13 @@ def close(a, b, tol: float) -> bool:
     if isinstance(a, list) and isinstance(b, list):
         return len(a) == len(b) and all(close(x, y, tol) for x, y in zip(a, b))
     return a == b
+
+
+def defines(source: str, name: str) -> str | None:
+    """Return None if `source` runs as a script and defines function `name`, else an error message."""
+    ctx = new_context(0.5)
+    try:
+        kind = ctx.eval(f"(function(){{\n{source}\n;return typeof {name};}})()")
+    except quickjs.JSException as e:
+        return str(e).splitlines()[0][:200]
+    return None if kind == "function" else f"{name} is not defined as a function"

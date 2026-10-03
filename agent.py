@@ -17,6 +17,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 from p2p.budget import Budget  # noqa: E402
 from p2p.case import CaseError, load_case  # noqa: E402
 from p2p.llm import LLMError, MissingKey  # noqa: E402
+from p2p.assemble import write_page  # noqa: E402
+from p2p.build import build  # noqa: E402
 from p2p.plan import make_plan  # noqa: E402
 from p2p.trace import Trace  # noqa: E402
 
@@ -34,7 +36,7 @@ def parse_args(argv=None):
     p.add_argument("--output", required=True, help="output directory")
     p.add_argument("--model", required=True, help="OpenRouter MODEL_ID")
     p.add_argument("--dry-run", action="store_true", help="load the case, write a placeholder page, no API calls")
-    p.add_argument("--stop-after", choices=["plan"], help="dev only: stop after this stage and save its JSON")
+    p.add_argument("--stop-after", choices=["plan", "build"], help="dev only: stop after this stage and save its JSON")
     return p.parse_args(argv)
 
 
@@ -70,9 +72,16 @@ def run(args, trace: Trace, budget: Budget) -> int:
         trace.event("plan", "stop_after", "info", issues=len(issues))
         return EXIT_OK
 
-    trace.event("generate", "pipeline", "fail", error="build stage not implemented yet")
-    print("error: build stage not implemented yet", file=sys.stderr)
-    return EXIT_FAIL
+    try:
+        built = build(case, plan, model=args.model, budget=budget, trace=trace)
+    except LLMError as e:
+        trace.event("build", "build", "fail", error=f"{type(e).__name__}: {e}")
+        print(f"error: build failed: {e}", file=sys.stderr)
+        return EXIT_FAIL
+    (out / "build.json").write_text(json.dumps(built["raw"], indent=1, ensure_ascii=False), encoding="utf-8")
+    path = write_page(out, built["spec"], built["page_js"])
+    trace.event("assemble", "write_page", "ok", path="index.html", bytes=path.stat().st_size)
+    return EXIT_OK
 
 
 def main(argv=None) -> int:

@@ -96,6 +96,15 @@
       return fmt(get(p, ctx), d === undefined ? undefined : Number(d));
     });
   }
+  // Same, but keeps the (already sanitized) HTML of the SPEC string; only the inserted values are escaped.
+  function interpHtml(s, ctx) {
+    if (typeof s !== 'string') return '';
+    return s.replace(/\{([A-Za-z0-9_.]+)(?::(\d))?\}/g, function (_, p, d) {
+      var t = document.createElement('span');
+      t.textContent = fmt(get(p, ctx), d === undefined ? undefined : Number(d));
+      return t.innerHTML;
+    });
+  }
   // Numeric field that may be a number, "{path}" or "path".
   function nval(v, ctx, dflt) {
     if (typeof v === 'number') return v;
@@ -643,8 +652,8 @@
       } catch (e) {
         kids = [el('p', { class: 'help', text: 'This visual could not be drawn: ' + (e && e.message ? e.message : e) })];
       }
-      var fig = el('figure', { id: 'visual-' + (i + 1) }, [v.title ? el('div', { class: 'vtitle', text: interp(v.title, ctx) }) : null].concat(kids));
-      if (v.caption) fig.appendChild(el('figcaption', { text: interp(v.caption, ctx) }));
+      var fig = el('figure', { id: 'visual-' + (i + 1) }, [v.title ? el('div', { class: 'vtitle', html: interpHtml(v.title, ctx) }) : null].concat(kids));
+      if (v.caption) fig.appendChild(el('figcaption', { html: interpHtml(v.caption, ctx) }));
       visBox.appendChild(fig);
     });
   }

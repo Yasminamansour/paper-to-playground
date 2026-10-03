@@ -53,3 +53,57 @@ Example test: {"name":"zero slope","overrides":[{"id":"a","value_json":"0"}],
 
 def plan_user(context_block: str) -> str:
     return "CASE\n" + context_block + "\n\nReturn the plan JSON."
+
+
+BUILD_SYSTEM = """You write the content and the calculation for an interactive teaching page.
+The page template, controls, explorations and source section already exist. You supply only the
+fields below, as ONE JSON object. Be concise and exact.
+
+{"title": str, "subtitle": str,
+ "idea": {"what": str, "equation": str, "why": str},
+ "playground_intro": str,
+ "controls": [{"id": str, "widget": str, "label": str, "help": str, ...optional layout keys}],
+ "visuals": [ ... 1 to 3 visuals ... ],
+ "compute_js": str}
+
+Text (title, subtitle, idea, intro, labels, help, captions)
+- HTML-lite only: <b> <i> <sub> <sup> <code> <br>. No links, no other tags.
+- Write for the AUDIENCE. idea.what: 2-4 sentences: the mechanism in plain words, defining every
+  symbol on first use. idea.equation: the plan's equation with <sub>/<sup>, e.g. y = &Sigma;<sub>i</sub> w<sub>i</sub> x<sub>i</sub>.
+  idea.why: 1-2 sentences on why it matters. Never say the demo reproduces the paper's results.
+
+controls: exactly one entry per plan state id.
+- widget: "slider" or "number" for numbers (slider only if min and max exist), "vector" for a list,
+  "prob" for a list of probabilities (adds Normalize button and live sum), "matrix", "toggle" (bool),
+  "select" (choice).
+- optional: min_len/max_len (vector, prob), min_rows/max_rows/min_cols/max_cols (matrix),
+  labels (vector entries), row_labels/col_labels (matrix), and share_rows/share_cols/share_len:
+  a group name; controls with the same group keep that size equal when the learner resizes one
+  (e.g. two matrices whose inner dimensions must match share_cols "d").
+
+compute_js: "function compute(state) { ... }" in plain ES2017.
+- state[id] holds each control's value. Do not modify state.
+- Return {outputs: {...}, intermediates: [{label, value, note}]}.
+  outputs MUST contain every plan output key, computed exactly as REFERENCE does.
+  intermediates: the plan's must_show_intermediates in order, with short labels; value may be a
+  number, array or 2-D array; note explains in a few words.
+- Handle edge cases explicitly: empty input, sums of zero, 0*log(0) = 0, division by zero,
+  mismatched sizes (throw new Error("plain message")). No DOM, network, timers, randomness or globals.
+- Add outputs that visuals need (e.g. label arrays like ["k1","k2"]).
+
+visuals: the first one shows the main cause and effect. Each has "kind", "title", "caption"
+(what to notice; may embed live values as {outputs.key:2}).
+- bar: {"labels": key, "data": key} or {"labels": key, "series": [{"name", "data": key}]}, "x_label", "y_label", optional "y_min", "y_max"
+- line: {"x": key, "series": [{"name", "data": key}], "points": [{"x", "y", "label"}], "x_label", "y_label"}
+- heatmap (colored) or matrix (plain table): {"data": key of a 2-D array, "row_labels": key or list, "col_labels": key or list, "decimals": 2}
+- svg diagram: {"width": 560, "height": 240, "items": [{"type": "box|circle|arrow|line|text", "x", "y", "w", "h", "r", "x2", "y2", "text", "tone": "accent|accent2|muted|good|bad"}]}
+- A data reference is an outputs key ("weights"), "outputs.key.0" for an element, or "state.id".
+  Numeric fields may be "{outputs.key}". Prefer heatmaps for matrices, bars for per-item values,
+  lines for a value as a function of a parameter."""
+
+
+def build_user(focus: str, audience: str, plan_brief: dict) -> str:
+    import json
+    return ("FOCUS: " + focus + "\nAUDIENCE: " + audience + "\nPLAN: "
+            + json.dumps(plan_brief, separators=(",", ":"), ensure_ascii=False)
+            + "\n\nReturn the JSON object.")

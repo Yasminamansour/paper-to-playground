@@ -1,0 +1,416 @@
+{
+ "concept": "Scaled dot-product attention: softmax(QK^T/sqrt(d_k))V",
+ "why_it_matters": "Attention weights decide which values a query mixes; scaling keeps softmax gradients usable.",
+ "audience_notes": "Engineering undergrads comfortable with matrix multiply and softmax; keep matrices 2x2.",
+ "source": {
+  "paper_title": "Attention Is All You Need",
+  "section_label": "3.2.1 Scaled Dot-Product Attention",
+  "equation_label": "Eq. 1",
+  "equation_text": "Attention(Q, K, V) = softmax(Q K^T / sqrt(d_k)) V"
+ },
+ "grounding_quotes": [
+  "We call our particular attention \"Scaled Dot-Product Attention\" (Figure 2).",
+  "We compute the dot products of the query with all keys, divide each by d k, and apply a softmax function to obtain the weights on the values.",
+  "Dot-product attention is identical to our algorithm, except for the scaling factor of 1 d k.",
+  "To counteract this effect, we scale the dot products by 1 d k."
+ ],
+ "symbols": [
+  {
+   "symbol": "Q",
+   "meaning": "query matrix, one row per query",
+   "units": "n_q x d_k"
+  },
+  {
+   "symbol": "K",
+   "meaning": "key matrix, one row per key",
+   "units": "n_k x d_k"
+  },
+  {
+   "symbol": "V",
+   "meaning": "value matrix, one row per key",
+   "units": "n_k x d_v"
+  },
+  {
+   "symbol": "d_k",
+   "meaning": "key/query dimension",
+   "units": "integer"
+  },
+  {
+   "symbol": "A",
+   "meaning": "attention weight matrix",
+   "units": "n_q x n_k"
+  }
+ ],
+ "state": [
+  {
+   "id": "Q",
+   "kind": "matrix",
+   "label": "Queries Q",
+   "min": -3,
+   "max": 3,
+   "step": 0.5,
+   "options": [],
+   "default": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "K",
+   "kind": "matrix",
+   "label": "Keys K",
+   "min": -3,
+   "max": 3,
+   "step": 0.5,
+   "options": [],
+   "default": [
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     -1
+    ]
+   ]
+  },
+  {
+   "id": "V",
+   "kind": "matrix",
+   "label": "Values V",
+   "min": -3,
+   "max": 3,
+   "step": 0.5,
+   "options": [],
+   "default": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     2
+    ]
+   ]
+  },
+  {
+   "id": "scale",
+   "kind": "bool",
+   "label": "Apply 1/sqrt(d_k) scaling",
+   "min": null,
+   "max": null,
+   "step": null,
+   "options": [],
+   "default": true
+  }
+ ],
+ "outputs": [
+  {
+   "key": "scores",
+   "meaning": "QK^T (optionally scaled)"
+  },
+  {
+   "key": "weights",
+   "meaning": "softmax rows of scores"
+  },
+  {
+   "key": "output",
+   "meaning": "weights times V"
+  }
+ ],
+ "must_show_intermediates": [
+  "scores",
+  "weights"
+ ],
+ "tests": [
+  {
+   "name": "default scaled",
+   "overrides": {},
+   "anchors": {},
+   "tol": 1e-06,
+   "rationale": "baseline 2x2 case",
+   "anchors_js": {},
+   "expected": {
+    "weights": [
+     [
+      0.5,
+      0.5
+     ],
+     [
+      0.8044296825069569,
+      0.19557031749304313
+     ]
+    ],
+    "scores": [
+     [
+      0.7071067811865475,
+      0.7071067811865475
+     ],
+     [
+      0.7071067811865475,
+      -0.7071067811865475
+     ]
+    ],
+    "output": [
+     [
+      0.5,
+      1
+     ],
+     [
+      0.8044296825069569,
+      0.39114063498608626
+     ]
+    ]
+   }
+  },
+  {
+   "name": "no scaling",
+   "overrides": {
+    "scale": false
+   },
+   "anchors": {},
+   "tol": 1e-06,
+   "rationale": "scaling off sharpens weights",
+   "anchors_js": {},
+   "expected": {
+    "weights": [
+     [
+      0.5,
+      0.5
+     ],
+     [
+      0.8807970779778823,
+      0.11920292202211755
+     ]
+    ],
+    "scores": [
+     [
+      1,
+      1
+     ],
+     [
+      1,
+      -1
+     ]
+    ],
+    "output": [
+     [
+      0.5,
+      1
+     ],
+     [
+      0.8807970779778823,
+      0.2384058440442351
+     ]
+    ]
+   }
+  },
+  {
+   "name": "equal scores",
+   "overrides": {
+    "Q": [
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "K": [
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ]
+   },
+   "anchors": {
+    "weights": [
+     [
+      0.5,
+      0.5
+     ],
+     [
+      0.5,
+      0.5
+     ]
+    ]
+   },
+   "tol": 1e-06,
+   "rationale": "identical keys give uniform weights",
+   "anchors_js": {
+    "weights": "[[0.5,0.5],[0.5,0.5]]"
+   },
+   "expected": {
+    "weights": [
+     [
+      0.5,
+      0.5
+     ],
+     [
+      0.5,
+      0.5
+     ]
+    ],
+    "scores": [
+     [
+      0.7071067811865475,
+      0.7071067811865475
+     ],
+     [
+      0.7071067811865475,
+      0.7071067811865475
+     ]
+    ],
+    "output": [
+     [
+      0.5,
+      1
+     ],
+     [
+      0.5,
+      1
+     ]
+    ]
+   }
+  },
+  {
+   "name": "dominant key",
+   "overrides": {
+    "Q": [
+     [
+      3,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "K": [
+     [
+      3,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ]
+   },
+   "anchors": {},
+   "tol": 1e-06,
+   "rationale": "large aligned dot product dominates",
+   "anchors_js": {},
+   "expected": {
+    "weights": [
+     [
+      0.9982804318220542,
+      0.0017195681779457815
+     ],
+     [
+      0.3302384506733431,
+      0.6697615493266569
+     ]
+    ],
+    "scores": [
+     [
+      6.363961030678928,
+      0
+     ],
+     [
+      0,
+      0.7071067811865475
+     ]
+    ],
+    "output": [
+     [
+      0.9982804318220542,
+      0.003439136355891563
+     ],
+     [
+      0.3302384506733431,
+      1.3395230986533138
+     ]
+    ]
+   }
+  }
+ ],
+ "reference_js": "function reference(state) {\n  const Q = state.Q, K = state.K, V = state.V;\n  const dk = K[0].length;\n  const s = state.scale ? 1/Math.sqrt(dk) : 1;\n  const scores = Q.map(q => K.map(k => q.reduce((a,x,i)=>a+x*k[i],0)*s));\n  const weights = scores.map(row => {\n    const m = Math.max(...row);\n    const e = row.map(x => Math.exp(x-m));\n    const z = e.reduce((a,b)=>a+b,0);\n    return e.map(x => x/z);\n  });\n  const output = weights.map(w => V[0].map((_,j) => w.reduce((a,wi,i)=>a+wi*V[i][j],0)));\n  return {scores, weights, output};\n}",
+ "invariants": [
+  {
+   "name": "rows sum to one",
+   "js": "out.weights.every(r => Math.abs(r.reduce((a,b)=>a+b,0) - 1) < 1e-9)"
+  },
+  {
+   "name": "output is weighted sum of V",
+   "js": "out.output.every((r,i) => r.every((x,j) => Math.abs(x - out.weights[i].reduce((a,w,k)=>a+w*state.V[k][j],0)) < 1e-9))"
+  },
+  {
+   "name": "weights nonnegative",
+   "js": "out.weights.every(r => r.every(x => x >= 0))"
+  }
+ ],
+ "explorations": [
+  {
+   "title": "Scaling on vs off",
+   "change": "Toggle the scaling checkbox",
+   "observe": "Weights become sharper (closer to 0/1) when scaling is off",
+   "why": "Large dot products push softmax into saturated regions",
+   "preset": {
+    "scale": false
+   }
+  },
+  {
+   "title": "Equal vs dominant keys",
+   "change": "Edit K so both rows match, then make one row align with Q",
+   "observe": "Uniform weights versus one weight near 1",
+   "why": "Softmax reflects relative dot-product similarity",
+   "preset": {
+    "K": [
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ]
+   }
+  }
+ ],
+ "limitation": {
+  "kind": "misconception",
+  "text": "Scaling is not cosmetic: without it large d_k saturates softmax and gradients vanish."
+ },
+ "simplifications": [
+  "Excerpt formula text lost the square root and fraction bar; standard form used.",
+  "Toy 2x2 matrices replace the paper's full Transformer setup.",
+  "Softmax uses max-subtraction for numerical stability; mathematically identical."
+ ],
+ "visual_idea": "Heatmap of attention weights with a bar chart of the output row.",
+ "reference_call": {
+  "name": "reference",
+  "params": [
+   "state"
+  ]
+ },
+ "answer_key": {
+  "reference_ok": true,
+  "anchors_agree": 1,
+  "anchors_suspect": [],
+  "invariant_failures": []
+ }
+}

@@ -19,7 +19,8 @@ RETRY_STATUS = {408, 429, 502, 503}
 MAX_RETRIES = 2
 BACKOFF = (2.0, 5.0)
 RETRY_AFTER_CAP = 20.0
-STARVED_MARGIN = 50  # visible tokens below this on finish_reason=length means reasoning ate the budget
+STARVED_MARGIN = 50
+ANY_JSON = {"$comment": "any JSON object"}  # pass as schema= to ask for json_object mode (no schema)  # visible tokens below this on finish_reason=length means reasoning ate the budget
 
 
 class LLMError(Exception):
@@ -106,7 +107,9 @@ def build_body(messages, *, model, max_tokens, schema, purpose, cfg) -> dict:
     }
     if cfg.get("reasoning") is not None:
         body["reasoning"] = cfg["reasoning"]
-    if schema is not None:
+    if schema is ANY_JSON:
+        body["response_format"] = {"type": "json_object"}
+    elif schema is not None:
         mode = cfg.get("json_mode", "schema")
         if mode == "schema":
             body["response_format"] = {"type": "json_schema",

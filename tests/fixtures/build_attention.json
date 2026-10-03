@@ -1,0 +1,83 @@
+{
+ "title": "Scaled dot-product attention",
+ "subtitle": "How a query decides which values to read",
+ "idea": {
+  "what": "Each query <b>q</b> is compared with every key <b>k</b> by a dot product. The scores are divided by &radic;d<sub>k</sub> and turned into weights with softmax. The output is the weighted average of the value rows.",
+  "equation": "Attention(Q, K, V) = softmax(QK<sup>T</sup> / &radic;d<sub>k</sub>) V",
+  "why": "This is the core operation of the Transformer."
+ },
+ "playground_intro": "Edit the matrices or switch scaling off and watch the weights change.",
+ "controls": [
+  {
+   "id": "Q",
+   "widget": "matrix",
+   "label": "Queries Q",
+   "help": "One query per row",
+   "share_cols": "d",
+   "min_rows": 1,
+   "max_rows": 3,
+   "row_labels": [
+    "q1",
+    "q2",
+    "q3"
+   ]
+  },
+  {
+   "id": "K",
+   "widget": "matrix",
+   "label": "Keys K",
+   "share_cols": "d",
+   "share_rows": "n",
+   "min_rows": 1,
+   "max_rows": 3,
+   "min_cols": 1,
+   "max_cols": 3,
+   "row_labels": [
+    "k1",
+    "k2",
+    "k3"
+   ]
+  },
+  {
+   "id": "V",
+   "widget": "matrix",
+   "label": "Values V",
+   "share_rows": "n",
+   "row_labels": [
+    "v1",
+    "v2",
+    "v3"
+   ]
+  },
+  {
+   "id": "scale",
+   "widget": "toggle",
+   "label": "Divide by &radic;d<sub>k</sub>"
+  }
+ ],
+ "visuals": [
+  {
+   "kind": "heatmap",
+   "title": "Attention weights",
+   "data": "weights",
+   "row_labels": "qlabels",
+   "col_labels": "klabels",
+   "decimals": 3,
+   "caption": "Each row sums to 1. Top-left weight: {outputs.weights.0.0:3}"
+  },
+  {
+   "kind": "bar",
+   "title": "Scores for query 1",
+   "labels": "klabels",
+   "data": "outputs.scores.0",
+   "y_label": "score"
+  },
+  {
+   "kind": "matrix",
+   "title": "Output",
+   "data": "output",
+   "row_labels": "qlabels"
+  }
+ ],
+ "compute_js": "function compute(state) {\n  var Q = state.Q, K = state.K, V = state.V;\n  var dk = K[0].length;\n  if (Q[0].length !== dk) throw new Error('Q and K need the same number of columns');\n  if (K.length !== V.length) throw new Error('K and V need the same number of rows');\n  var s = state.scale ? 1 / Math.sqrt(dk) : 1;\n  var scores = Q.map(function (q) { return K.map(function (k) { var t = 0; for (var i = 0; i < dk; i++) t += q[i] * k[i]; return t * s; }); });\n  var weights = scores.map(function (r) { var m = Math.max.apply(null, r); var e = r.map(function (x) { return Math.exp(x - m); }); var z = e.reduce(function (a, b) { return a + b; }, 0); return e.map(function (x) { return x / z; }); });\n  var output = weights.map(function (w) { return V[0].map(function (_, j) { return w.reduce(function (a, wi, i) { return a + wi * V[i][j]; }, 0); }); });\n  return { outputs: { scores: scores, weights: weights, output: output,\n                      qlabels: Q.map(function (_, i) { return 'q' + (i + 1); }), klabels: K.map(function (_, i) { return 'k' + (i + 1); }) },\n           intermediates: [ { label: 'scores', value: scores, note: 'QK^T, scaled if on' }, { label: 'weights', value: weights, note: 'softmax of each row' } ] };\n}"
+}
