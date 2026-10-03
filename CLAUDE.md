@@ -14,3 +14,4 @@
   browser downloads or GPU at run time. Playwright is dev-only.
 - Full assignment: `docs/SPEC.md`. Build plan: `docs/ROADMAP.md`. Read both before each stage.
 - Secret guard: run `python tools/install_hooks.py` once after cloning.
+- MODEL_ID: `deepseek/deepseek-v4.1-flash` (tested: json_schema works, reasoning off = 0 reasoning tokens, ~1.3 s per tiny call). Settings in `src/p2p/config.py`.
