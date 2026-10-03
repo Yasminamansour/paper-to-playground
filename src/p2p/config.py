@@ -10,7 +10,8 @@ DEFAULT = {
     "reasoning": {"effort": "low", "exclude": True},
     "json_mode": "schema",
     "require_params": True,
-    "temperature": 0.2,
+    "provider_sort": "throughput",
+    "temperature": 0.0,  # same input -> as close to the same plan as possible (graded twice)
 }
 
 # First matching prefix wins. Tune these with tools/ping.py.

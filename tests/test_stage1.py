@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -20,7 +21,8 @@ def write(tmp_path, obj, name="case.json"):
 
 
 def run_agent(*args):
-    return subprocess.run([sys.executable, str(ROOT / "agent.py"), *args], capture_output=True, text=True)
+    env = {k: v for k, v in os.environ.items() if k != "OPENROUTER_API_KEY"}  # never call the API in tests
+    return subprocess.run([sys.executable, str(ROOT / "agent.py"), *args], capture_output=True, text=True, env=env)
 
 
 # case loader
@@ -122,7 +124,7 @@ def test_cli_bad_usage_exits_2():
     assert run_agent("--input", "x").returncode == 2
 
 
-def test_cli_not_implemented_exits_1(tmp_path):
+def test_cli_without_key_exits_1(tmp_path):
     case = write(tmp_path, {"source_url": "u", "focus": "f", "audience": "a"})
     r = run_agent("--input", str(case), "--output", str(tmp_path / "o"), "--model", "m")
     assert r.returncode == 1

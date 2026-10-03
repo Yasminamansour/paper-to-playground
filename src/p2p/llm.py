@@ -113,8 +113,13 @@ def build_body(messages, *, model, max_tokens, schema, purpose, cfg) -> dict:
                                        "json_schema": {"name": purpose, "strict": True, "schema": schema}}
         elif mode == "object":
             body["response_format"] = {"type": "json_object"}
+    prov = {}
     if cfg.get("require_params"):
-        body["provider"] = {"require_parameters": True}
+        prov["require_parameters"] = True
+    if cfg.get("provider_sort"):
+        prov["sort"] = cfg["provider_sort"]  # e.g. "throughput": prefer the fastest providers
+    if prov:
+        body["provider"] = prov
     return body
 
 

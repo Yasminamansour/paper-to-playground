@@ -8,6 +8,7 @@ import time
 T0 = time.monotonic()  # process start: trace times and the deadline are measured from here
 
 import argparse  # noqa: E402
+import json  # noqa: E402
 import sys  # noqa: E402
 from pathlib import Path  # noqa: E402
 
@@ -15,6 +16,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
 from p2p.budget import Budget  # noqa: E402
 from p2p.case import CaseError, load_case  # noqa: E402
+from p2p.llm import LLMError, MissingKey  # noqa: E402
+from p2p.plan import make_plan  # noqa: E402
 from p2p.trace import Trace  # noqa: E402
 
 EXIT_OK, EXIT_FAIL, EXIT_INPUT = 0, 1, 2
@@ -31,6 +34,7 @@ def parse_args(argv=None):
     p.add_argument("--output", required=True, help="output directory")
     p.add_argument("--model", required=True, help="OpenRouter MODEL_ID")
     p.add_argument("--dry-run", action="store_true", help="load the case, write a placeholder page, no API calls")
+    p.add_argument("--stop-after", choices=["plan"], help="dev only: stop after this stage and save its JSON")
     return p.parse_args(argv)
 
 
@@ -52,8 +56,22 @@ def run(args, trace: Trace, budget: Budget) -> int:
         trace.event("assemble", "write_placeholder", "ok", path="index.html")
         return EXIT_OK
 
-    trace.event("generate", "pipeline", "fail", error="generation not implemented yet")
-    print("error: generation not implemented yet", file=sys.stderr)
+    try:
+        plan, issues = make_plan(case, model=args.model, budget=budget, trace=trace)
+    except MissingKey as e:
+        print(f"error: {e}", file=sys.stderr)
+        return EXIT_FAIL
+    except LLMError as e:
+        trace.event("plan", "make_plan", "fail", error=f"{type(e).__name__}: {e}")
+        print(f"error: plan failed: {e}", file=sys.stderr)
+        return EXIT_FAIL
+    (out / "plan.json").write_text(json.dumps(plan, indent=1, ensure_ascii=False), encoding="utf-8")
+    if args.stop_after == "plan":
+        trace.event("plan", "stop_after", "info", issues=len(issues))
+        return EXIT_OK
+
+    trace.event("generate", "pipeline", "fail", error="build stage not implemented yet")
+    print("error: build stage not implemented yet", file=sys.stderr)
     return EXIT_FAIL
 
 
