@@ -16,8 +16,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
 from p2p.budget import Budget  # noqa: E402
 from p2p.case import CaseError, load_case  # noqa: E402
+from p2p.checks import run_checks, score  # noqa: E402
 from p2p.llm import LLMError, MissingKey  # noqa: E402
-from p2p.assemble import write_page  # noqa: E402
+from p2p.assemble import assemble  # noqa: E402
 from p2p.build import build  # noqa: E402
 from p2p.plan import make_plan  # noqa: E402
 from p2p.trace import Trace  # noqa: E402
@@ -79,8 +80,14 @@ def run(args, trace: Trace, budget: Budget) -> int:
         print(f"error: build failed: {e}", file=sys.stderr)
         return EXIT_FAIL
     (out / "build.json").write_text(json.dumps(built["raw"], indent=1, ensure_ascii=False), encoding="utf-8")
-    path = write_page(out, built["spec"], built["page_js"])
-    trace.event("assemble", "write_page", "ok", path="index.html", bytes=path.stat().st_size)
+    html = assemble(built["spec"], built["page_js"])
+    results = run_checks(case, plan, built, html, trace)
+    crit, major, minor = score(results)
+    trace.event("check", "check_summary", "ok" if not (crit or major) else "fail",
+                critical=crit, major=major, minor=minor,
+                failed=[r.name for r in results if r.passed is False])
+    (out / "index.html").write_text(html, encoding="utf-8", newline="\n")
+    trace.event("assemble", "write_page", "ok", path="index.html", bytes=len(html.encode("utf-8")))
     return EXIT_OK
 
 

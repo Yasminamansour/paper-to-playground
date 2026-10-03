@@ -85,14 +85,14 @@ class Trace:
         fields.update(extra)
         return self.event(stage, "llm_call", "ok" if ok else "fail", **fields)
 
-    def check(self, name: str, passed: bool, detail=None, stage: str = "check", skipped: bool = False) -> dict:
+    def check(self, name: str, passed: bool, detail=None, stage: str = "check", skipped: bool = False, **extra) -> dict:
         if skipped:
-            return self.event(stage, f"check:{name}", "skip", detail=detail)
+            return self.event(stage, f"check:{name}", "skip", detail=detail, **extra)
         if passed:
             self.checks_passed += 1
         else:
             self.checks_failed += 1
-        return self.event(stage, f"check:{name}", "ok" if passed else "fail", detail=detail)
+        return self.event(stage, f"check:{name}", "ok" if passed else "fail", detail=detail, **extra)
 
     def revision(self, round: int, targets, reason: str, stage: str = "repair") -> dict:
         self.revisions += 1
