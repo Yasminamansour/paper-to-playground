@@ -1,0 +1,8 @@
+{
+ "source_url": "https://arxiv.org/abs/1503.02531",
+ "title": "Distilling the Knowledge in a Neural Network",
+ "section": "2 Distillation",
+ "focus": "Explain softmax with a temperature T applied to a small vector of logits. Let the learner edit the logits and change T. Show the scaled logits, the exponentials and the resulting probabilities. Compare a low temperature (nearly one-hot) with a high temperature (nearly uniform). Check that the probabilities always sum to one, that equal logits give equal probabilities for any T, and that the largest logit keeps the largest probability.",
+ "audience": "engineering undergraduate",
+ "excerpt": "Classifiers usually turn the logit z_i of each class into a probability q_i with a softmax that first divides every logit by a temperature T: q_i = exp(z_i / T) / sum_j exp(z_j / T). The ordinary softmax is the case T = 1. Raising T makes the distribution over classes softer, so classes that were given very small probabilities become visible. In the limit of very high temperature all classes approach the same probability, while a very low temperature puts almost all of the probability on the class with the largest logit. Distillation trains a small model on these softened targets produced by a large model at a high temperature."
+}

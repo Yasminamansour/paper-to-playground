@@ -1,0 +1,8 @@
+{
+ "source_url": "https://arxiv.org/abs/1502.03167",
+ "title": "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift",
+ "section": "3 Normalization via Mini-Batch Statistics, Algorithm 1",
+ "focus": "Explain the batch-normalization transform on one feature over a small mini-batch. Let the learner edit the batch values, epsilon, and the learned scale gamma and shift beta. Show the batch mean, the batch variance, the normalized values and the final outputs. Check that with gamma = 1 and beta = 0 the outputs have mean 0 and variance close to 1, that gamma and beta can undo the normalization, and that a batch of identical values does not divide by zero thanks to epsilon.",
+ "audience": "engineering undergraduate",
+ "excerpt": "For one activation x over a mini-batch of m values, the transform first computes the mini-batch mean mu_B = (1/m) sum_i x_i and the mini-batch variance sigma_B^2 = (1/m) sum_i (x_i - mu_B)^2. Each value is normalized as x_hat_i = (x_i - mu_B) / sqrt(sigma_B^2 + epsilon), where epsilon is a small constant added for numerical stability. The normalized value is then scaled and shifted by two learned parameters: y_i = gamma * x_hat_i + beta. Setting gamma = sqrt(sigma_B^2 + epsilon) and beta = mu_B would recover the original activations, so the transform can represent the identity if that is what the network needs."
+}

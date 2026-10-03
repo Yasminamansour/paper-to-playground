@@ -1,0 +1,16 @@
+{
+ "source_url": "https://example.org/papers/bayes-essay",
+ "title": "An Essay towards solving a Problem in the Doctrine of Chances",
+ "focus": "Explain Bayes' rule with a diagnostic test: prior prevalence, sensitivity and false-positive rate give the probability of having the condition after a positive result. Let the learner change all three. Show the four joint probabilities and the posterior. Check that a test with sensitivity equal to the false-positive rate leaves the prior unchanged and that the posterior is 1 when the false-positive rate is 0 (and sensitivity > 0).",
+ "audience": "first-year engineering students with no statistics background",
+ "year": 1763,
+ "authors": [
+  "Thomas Bayes",
+  "Richard Price"
+ ],
+ "tags": {
+  "area": "probability",
+  "difficulty": 2
+ },
+ "notes": null
+}

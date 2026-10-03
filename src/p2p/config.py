@@ -16,7 +16,8 @@ DEFAULT = {
 
 # First matching prefix wins. Tune these with tools/ping.py.
 BY_PREFIX = [
-    ("deepseek/", {"reasoning": {"enabled": False, "exclude": True}}),
+    # Together counted ~1,200 fewer prompt tokens than Fireworks for the same plan request (harness, 16 runs).
+    ("deepseek/", {"reasoning": {"enabled": False, "exclude": True}, "provider_order": ["Together"]}),
 ]
 
 

@@ -1,0 +1,601 @@
+[
+ {
+  "case": "a_attention",
+  "run": 1,
+  "exit": 0,
+  "wall_s": 13.7,
+  "error": "",
+  "calls": 2,
+  "prompt": 3194,
+  "completion": 3523,
+  "tokens": 6717,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1453,
+    1540,
+    5.719
+   ],
+   [
+    "build",
+    "Together",
+    1741,
+    1983,
+    7.157
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 56.7,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "a_attention",
+  "run": 2,
+  "exit": 0,
+  "wall_s": 14.4,
+  "error": "",
+  "calls": 2,
+  "prompt": 3248,
+  "completion": 3473,
+  "tokens": 6721,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1453,
+    1638,
+    7.141
+   ],
+   [
+    "build",
+    "Together",
+    1795,
+    1835,
+    6.422
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 56.5,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "b_entropy",
+  "run": 1,
+  "exit": 0,
+  "wall_s": 11.0,
+  "error": "",
+  "calls": 2,
+  "prompt": 3596,
+  "completion": 2472,
+  "tokens": 6068,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    2078,
+    1376,
+    5.687
+   ],
+   [
+    "build",
+    "Together",
+    1518,
+    1096,
+    4.468
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 54.1,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "b_entropy",
+  "run": 2,
+  "exit": 0,
+  "wall_s": 10.6,
+  "error": "",
+  "calls": 2,
+  "prompt": 3512,
+  "completion": 2443,
+  "tokens": 5955,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    2078,
+    1240,
+    5.422
+   ],
+   [
+    "build",
+    "Together",
+    1434,
+    1203,
+    4.375
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 54.6,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "c_softmax_temperature",
+  "run": 1,
+  "exit": 0,
+  "wall_s": 10.6,
+  "error": "",
+  "calls": 2,
+  "prompt": 2774,
+  "completion": 2741,
+  "tokens": 5515,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1286,
+    1273,
+    4.906
+   ],
+   [
+    "build",
+    "Together",
+    1488,
+    1468,
+    4.89
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 55.2,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "c_softmax_temperature",
+  "run": 2,
+  "exit": 0,
+  "wall_s": 8.7,
+  "error": "",
+  "calls": 2,
+  "prompt": 2774,
+  "completion": 2299,
+  "tokens": 5073,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1286,
+    1296,
+    4.625
+   ],
+   [
+    "build",
+    "Together",
+    1488,
+    1003,
+    3.281
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 53.9,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "d_conv_output_size",
+  "run": 1,
+  "exit": 0,
+  "wall_s": 12.0,
+  "error": "",
+  "calls": 2,
+  "prompt": 3065,
+  "completion": 3301,
+  "tokens": 6366,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1351,
+    1959,
+    5.594
+   ],
+   [
+    "build",
+    "Together",
+    1714,
+    1342,
+    5.609
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 55.2,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "d_conv_output_size",
+  "run": 2,
+  "exit": 0,
+  "wall_s": 11.9,
+  "error": "",
+  "calls": 2,
+  "prompt": 2991,
+  "completion": 3184,
+  "tokens": 6175,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1351,
+    1651,
+    5.297
+   ],
+   [
+    "build",
+    "Together",
+    1640,
+    1533,
+    5.812
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 55.7,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "e_batchnorm",
+  "run": 1,
+  "exit": 0,
+  "wall_s": 14.7,
+  "error": "",
+  "calls": 2,
+  "prompt": 3051,
+  "completion": 3095,
+  "tokens": 6146,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1338,
+    1516,
+    5.562
+   ],
+   [
+    "build",
+    "Together",
+    1713,
+    1579,
+    8.359
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 55.8,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "e_batchnorm",
+  "run": 2,
+  "exit": 0,
+  "wall_s": 14.9,
+  "error": "",
+  "calls": 2,
+  "prompt": 3058,
+  "completion": 3113,
+  "tokens": 6171,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1338,
+    1658,
+    7.906
+   ],
+   [
+    "build",
+    "Together",
+    1720,
+    1455,
+    6.234
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 55.7,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "f_adam",
+  "run": 1,
+  "exit": 0,
+  "wall_s": 20.3,
+  "error": "",
+  "calls": 3,
+  "prompt": 4909,
+  "completion": 4447,
+  "tokens": 9356,
+  "revisions": 1,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1396,
+    1973,
+    8.453
+   ],
+   [
+    "build",
+    "Together",
+    2116,
+    2103,
+    9.094
+   ],
+   [
+    "repair_1",
+    "Together",
+    1397,
+    371,
+    1.86
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v1",
+  "kb": 57.1,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "f_adam",
+  "run": 2,
+  "exit": 0,
+  "wall_s": 15.4,
+  "error": "",
+  "calls": 2,
+  "prompt": 3418,
+  "completion": 3947,
+  "tokens": 7365,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1396,
+    1891,
+    5.359
+   ],
+   [
+    "build",
+    "Together",
+    2022,
+    2056,
+    9.297
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 56.6,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "g_awkward_no_excerpt",
+  "run": 1,
+  "exit": 0,
+  "wall_s": 12.7,
+  "error": "",
+  "calls": 2,
+  "prompt": 3013,
+  "completion": 3378,
+  "tokens": 6391,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1176,
+    1713,
+    6.438
+   ],
+   [
+    "build",
+    "Together",
+    1837,
+    1665,
+    5.484
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 56.0,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "g_awkward_no_excerpt",
+  "run": 2,
+  "exit": 0,
+  "wall_s": 10.6,
+  "error": "",
+  "calls": 2,
+  "prompt": 3032,
+  "completion": 2866,
+  "tokens": 5898,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    1176,
+    1755,
+    6.094
+   ],
+   [
+    "build",
+    "Together",
+    1856,
+    1111,
+    3.734
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 54.8,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "h_long_excerpt",
+  "run": 1,
+  "exit": 0,
+  "wall_s": 10.4,
+  "error": "",
+  "calls": 2,
+  "prompt": 5011,
+  "completion": 3643,
+  "tokens": 8654,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    3255,
+    1869,
+    4.875
+   ],
+   [
+    "build",
+    "Together",
+    1756,
+    1774,
+    4.735
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 55.7,
+  "offline_problems": [],
+  "flags": []
+ },
+ {
+  "case": "h_long_excerpt",
+  "run": 2,
+  "exit": 0,
+  "wall_s": 9.9,
+  "error": "",
+  "calls": 2,
+  "prompt": 4976,
+  "completion": 3581,
+  "tokens": 8557,
+  "revisions": 0,
+  "providers": [
+   "Together"
+  ],
+  "per_call": [
+   [
+    "plan",
+    "Together",
+    3255,
+    1812,
+    4.281
+   ],
+   [
+    "build",
+    "Together",
+    1721,
+    1769,
+    4.859
+   ]
+  ],
+  "failed": [],
+  "critical": 0,
+  "version": "v0",
+  "kb": 55.6,
+  "offline_problems": [],
+  "flags": []
+ }
+]

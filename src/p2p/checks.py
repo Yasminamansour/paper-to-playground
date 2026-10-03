@@ -76,13 +76,15 @@ def static_checks(case, spec: dict, html: str) -> list[CheckResult]:
                   "minor", {"section": g.get("section"), "equation": g.get("equation")}, "text"))
     if case.excerpt:
         quotes = g.get("from_excerpt") or []
-        norm = lambda s: re.sub(r"\s+", " ", _text(s)).strip()
-        ex_n = norm(case.excerpt)
-        bad = [q for q in quotes if norm(q) not in ex_n]
-        out.append(_r("quotes_in_excerpt", bool(quotes) and not bad, "major",
-                      bad[:3] or f"{len(quotes)} quotes verified", "text"))
+        ws = lambda t: re.sub(r"\s+", " ", t).strip()
+        ex_n = ws(case.excerpt)                      # raw excerpt text: never strip "tags" from it
+        bad = [q for q in quotes if ws(_text(q)) not in ex_n]  # quotes are sanitized HTML-lite
+        if not quotes:
+            out.append(_r("quotes_in_excerpt", False, "minor", "no quotes on the page", "plan.quotes"))
+        else:
+            out.append(_r("quotes_in_excerpt", not bad, "major", bad[:3] or f"{len(quotes)} quotes verified", "plan.quotes"))
     else:
-        out.append(_r("quotes_in_excerpt", None, "major", "no excerpt in case.json", "text"))
+        out.append(_r("quotes_in_excerpt", None, "major", "no excerpt in case.json", "plan.quotes"))
     return out
 
 
@@ -171,6 +173,16 @@ def _bounds(s):
     return (lo, hi) if lo <= hi else (hi, lo)
 
 
+def _snap(x, s):
+    """Round to the control's step grid (a step count of 1 must stay a whole number)."""
+    step = s.get("step")
+    if not (_is_num(step) and step > 0):
+        return x
+    lo = s.get("min") if _is_num(s.get("min")) else 0
+    y = lo + round((x - lo) / step) * step
+    return round(y, 10)
+
+
 def _map_values(v, f):
     if isinstance(v, list):
         return [_map_values(x, f) for x in v]
@@ -189,7 +201,7 @@ def perturbations(plan: dict, prob_ids: set) -> list[tuple[str, dict]]:
             sid, kind, lo_hi = s["id"], s.get("kind"), _bounds(s)
             v = st.get(sid)
             if kind in ("number", "vector", "matrix"):
-                v = _map_values(v, lambda x: f_num(x, *lo_hi))
+                v = _map_values(v, lambda x: _snap(f_num(x, *lo_hi), s))
                 if sid in prob_ids and isinstance(v, list):
                     tot = sum(x for x in v if _is_num(x) and x > 0)
                     v = [max(0, x) / tot for x in v] if tot > 0 else [1 / len(v)] * len(v)

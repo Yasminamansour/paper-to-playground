@@ -65,7 +65,7 @@ table { border-collapse: collapse; }
 .ctl input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); vertical-align: middle; }
 .grid-in td, .grid-in th { padding: 2px; }
 .grid-in th { font-size: .78rem; color: var(--ink-2); font-weight: 600; text-align: center; padding: 0 4px; }
-.grid-in input[type=number] { width: 4.6em; }
+.grid-in input[type=number] { width: 5.4em; }
 .btn { font: inherit; font-size: .85rem; cursor: pointer; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; padding: 4px 10px; }
 .btn:hover { border-color: var(--accent); }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }

@@ -17,7 +17,7 @@ def good_raw():
     return {
         "concept": "line", "why_it_matters": "w", "audience_notes": "n",
         "source": {"paper_title": "T", "section_label": "S1", "equation_label": "Eq. 1", "equation_text": "y = a x + b"},
-        "grounding_quotes": ["a line is   set by", "not in the excerpt"],
+        "grounding_quotes": ["a straight line is   set by its slope and its intercept", "this sentence is not in the excerpt at all"],
         "symbols": [{"symbol": "a", "meaning": "slope", "units": "-"}],
         "state": [
             {"id": "a", "kind": "number", "label": "a", "default_json": "1", "min": -3, "max": 3, "step": 0.1, "options": []},
@@ -86,9 +86,9 @@ def test_make_plan_drops_invented_quotes_and_traces(tmp_path):
         seen["messages"] = messages
         return good_raw(), {"completion_tokens": 900}
 
-    case = Case("u", "explain lines", "students", extra={"excerpt": "Here a line is set by two numbers."})
+    case = Case("u", "explain lines", "students", extra={"excerpt": "Here a straight line is set by its slope and its intercept."})
     plan, issues = make_plan(case, model="m", budget=budget, trace=trace, chat=fake_chat)
-    assert plan["grounding_quotes"] == ["a line is   set by"]
+    assert plan["grounding_quotes"] == ["a straight line is   set by its slope and its intercept"]
     assert seen["max_tokens"] == PLAN_MAX_TOKENS and seen["schema"] is PLAN_SCHEMA and seen["purpose"] == "plan"
     assert "EXCERPT" in seen["messages"][1]["content"]
     trace.close()
@@ -166,10 +166,31 @@ def test_reference_with_any_name_or_named_parameters():
 
 def test_formula_quotes_are_dropped(tmp_path):
     raw = good_raw()
-    raw["grounding_quotes"] = ["H = K n sum pi log pi", "a line is set by"]
-    case = Case("u", "f", "a", extra={"excerpt": "H = K n sum pi log pi and a line is set by two numbers."})
+    keep = "Setting gamma to the batch deviation and beta to the mean would recover the original activations"
+    raw["grounding_quotes"] = ["H = K n sum pi log pi", keep]
+    case = Case("u", "f", "a", extra={"excerpt": "H = K n sum pi log pi. " + keep + "."})
     plan, _ = make_plan(case, model="m", budget=Budget(), trace=Trace(tmp_path), chat=lambda m, **k: (raw, {}))
-    assert plan["grounding_quotes"] == ["a line is set by"]
+    assert plan["grounding_quotes"] == [keep]
+
+
+def test_quotes_are_picked_from_excerpt_when_none_survive(tmp_path):
+    raw = good_raw()
+    raw["grounding_quotes"] = ["x = y + z"]
+    raw["concept"] = "slope of a straight line"
+    excerpt = ("Intro text that is not relevant to anything here at all, really. "
+               "The slope of a straight line tells how fast the output grows with the input. y = a x + b.")
+    plan, _ = make_plan(Case("u", "f", "a", extra={"excerpt": excerpt}), model="m", budget=Budget(),
+                        trace=Trace(tmp_path), chat=lambda m, **k: (raw, {}))
+    assert plan["grounding_quotes"] == ["The slope of a straight line tells how fast the output grows with the input."]
+
+
+def test_invariant_failing_on_reference_is_dropped(tmp_path):
+    raw = good_raw()
+    raw["invariants"] = [{"name": "ok", "js": "out.ys.length === state.xs.length"},
+                         {"name": "too strict", "js": "out.ys[0] === 0"}]
+    plan, _ = make_plan(Case("u", "f", "a"), model="m", budget=Budget(), trace=Trace(tmp_path),
+                        chat=lambda m, **k: (raw, {}))
+    assert [i["name"] for i in plan["invariants"]] == ["ok"]
 
 
 def test_plan_with_no_tests_gets_one_repair(tmp_path):

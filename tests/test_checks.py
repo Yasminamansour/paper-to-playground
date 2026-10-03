@@ -95,3 +95,19 @@ def test_missing_exploration_text_is_critical():
 def test_infinite_loop_does_not_hang():
     res = check(dict(BUILD, compute_js="function compute(state) { while (true) {} }"))
     assert failed(res) == ["compute_runs_on_defaults"]
+
+
+def test_quote_with_angle_brackets_is_found():
+    from p2p.case import Case
+    from p2p.checks import static_checks
+    case = Case("u", "f", "a", extra={"excerpt": "it converges when 0 < eta < 2/a, and for eta > 2/a they diverge."})
+    spec = {"grounding": {"from_excerpt": ["for eta &gt; 2/a they diverge"]}}
+    res = {r.name: r for r in static_checks(case, spec, "")}
+    assert res["quotes_in_excerpt"].passed is True
+
+
+def test_random_inputs_respect_integer_steps():
+    from p2p.checks import perturbations
+    plan = {"state": [{"id": "n", "kind": "number", "default": 5, "min": 1, "max": 20, "step": 1}]}
+    for _, st in perturbations(plan, set()):
+        assert float(st["n"]).is_integer()

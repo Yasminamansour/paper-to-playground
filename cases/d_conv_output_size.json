@@ -1,0 +1,8 @@
+{
+ "source_url": "https://arxiv.org/abs/1603.07285",
+ "title": "A guide to convolution arithmetic for deep learning",
+ "section": "2 Convolution arithmetic",
+ "focus": "Explain how the output size of a 1-D or 2-D convolution depends on the input size i, kernel size k, zero padding p and stride s. Let the learner change all four. Show where each kernel position lands on the padded input and the resulting output size. Check that with p = 0 and s = 1 the output is i - k + 1, that 'same' padding p = (k - 1)/2 with s = 1 keeps the size for odd k, and that the floor in the formula handles strides that do not divide evenly.",
+ "audience": "engineering undergraduate",
+ "excerpt": "Consider a square input of size i, a square kernel of size k, zero padding of p on each side and a stride of s, all along one axis. The kernel starts at the left edge of the padded input and moves s cells at a time while it still fits inside the padded input, which has size i + 2p. The number of positions it can take is the output size o = floor((i + 2p - k) / s) + 1. With no padding and unit stride this becomes o = i - k + 1. Half padding, p = floor(k / 2) for odd k with unit stride, gives an output of the same size as the input. When s does not divide i + 2p - k exactly, the last cells of the input are never covered by the kernel."
+}

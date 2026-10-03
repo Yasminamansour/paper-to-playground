@@ -73,3 +73,25 @@ def test_agent_writes_page(tmp_path, monkeypatch):
     assert "Scaled dot-product attention" in page and "function compute" in page
     last = json.loads((out / "trace.jsonl").read_text(encoding="utf-8").splitlines()[-1])
     assert last["stage"] == "summary" and last["exit_code"] == 0
+
+
+def test_variable_named_window_is_allowed_but_browser_access_is_not():
+    from p2p.build import validate_build
+    ok = {"compute_js": "function compute(s){ var window = 3; return {outputs:{w: window}}; }", "visuals": [{"kind": "bar"}]}
+    assert validate_build(ok) == []
+    for bad in ("window.fetch('x')", "document.cookie", "fetch('x')", "new Function('return 1')", "Math.random()"):
+        b = {"compute_js": "function compute(s){ %s; return {outputs:{}}; }" % bad, "visuals": [{"kind": "bar"}]}
+        assert any("forbidden" in i for i in validate_build(b)), bad
+
+
+def test_invalid_compute_gets_one_fix_call(tmp_path):
+    bad = dict(FAKE, compute_js="function compute(state) { return document.title; }")
+    calls = []
+
+    def chat(messages, **kw):
+        calls.append(kw["purpose"])
+        return (bad, {}) if kw["purpose"] == "build" else ({"compute_js": FAKE["compute_js"]}, {})
+
+    case = load_case(ROOT / "cases" / "a_attention.json")
+    r = build(case, PLAN, model="m", budget=Budget(), trace=Trace(tmp_path), chat=chat)
+    assert calls == ["build", "build_fix"] and r["compute_js"] == FAKE["compute_js"]

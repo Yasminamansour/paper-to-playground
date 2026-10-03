@@ -12,13 +12,14 @@ from .prompts import BUILD_SYSTEM, build_user
 
 BUILD_MAX_TOKENS = 4000
 BUILD_RETRY_MAX_TOKENS = 5500
+COMPUTE_FIX_MAX_TOKENS = 2500
 SHORTER = ("Your previous answer was cut off at the token limit. Answer again, shorter: "
            "1-2 sentence texts, at most 2 visuals, compact compute_js.")
 
 FORBIDDEN_JS = re.compile(
-    r"\b(fetch|XMLHttpRequest|WebSocket|import|require|eval|Function|document|window|globalThis|"
-    r"localStorage|sessionStorage|indexedDB|setTimeout|setInterval|navigator|location|postMessage)\b"
-    r"|Math\.random")
+    r"\b(?:window|document|globalThis|self|navigator|location|parent|top)\s*[.\[]"   # real browser access, not a variable named "window"
+    r"|\b(?:fetch|eval|require|importScripts|setTimeout|setInterval)\s*\(|\bimport\s*\(|\bnew\s+Function\b|\bFunction\s*\("
+    r"|\b(?:XMLHttpRequest|WebSocket|EventSource|localStorage|sessionStorage|indexedDB)\b|Math\.random")
 
 WIDGETS = {"slider", "number", "vector", "prob", "matrix", "toggle", "select"}
 LAYOUT_KEYS = ("min_len", "max_len", "min_rows", "max_rows", "min_cols", "max_cols", "labels",
@@ -234,6 +235,21 @@ def build(case, plan: dict, *, model, budget, trace, chat=llm_mod.chat) -> dict:
     if not isinstance(b, dict):
         raise BuildError("build output is not a JSON object")
     issues = validate_build(b)
+    if any("compute_js" in i for i in issues) and budget.can_call(COMPUTE_FIX_MAX_TOKENS):
+        # one small call to fix only compute_js, instead of losing the whole page
+        trace.check("build_compute_valid", False, issues, stage="build")
+        trace.revision(1, ["compute_js"], "; ".join(issues)[:200], stage="build")
+        fix = messages + [{"role": "assistant", "content": json.dumps({"compute_js": b.get("compute_js", "")})},
+                          {"role": "user", "content": "compute_js has problems: " + "; ".join(issues)
+                           + '. Return {"compute_js": "<corrected full source>"} only.'}]
+        try:
+            patch, _ = chat(fix, model=model, max_tokens=COMPUTE_FIX_MAX_TOKENS, purpose="build_fix",
+                            schema=llm_mod.ANY_JSON, budget=budget, trace=trace, stage="build")
+            if isinstance(patch, dict) and isinstance(patch.get("compute_js"), str):
+                b["compute_js"] = patch["compute_js"]
+                issues = validate_build(b)
+        except llm_mod.LLMError as e:
+            trace.event("build", "build_fix", "fail", error=f"{type(e).__name__}: {e}")
     trace.check("build_compute_valid", not issues, issues or "ok", stage="build")
     if any("compute_js" in i for i in issues):
         raise BuildError("; ".join(issues))

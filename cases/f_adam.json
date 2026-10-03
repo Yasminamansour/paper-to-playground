@@ -1,0 +1,8 @@
+{
+ "source_url": "https://arxiv.org/abs/1412.6980",
+ "title": "Adam: A Method for Stochastic Optimization",
+ "section": "2 Algorithm, Algorithm 1",
+ "focus": "Explain one parameter's Adam updates over the first few steps for a short sequence of gradients. Let the learner edit the gradients, the step size alpha and the decay rates beta1 and beta2. Show the first and second moment estimates, their bias-corrected versions and each step's update. Check that bias correction makes the first step's update close to alpha in size whatever the gradient's scale, that a zero gradient sequence gives no movement, and that beta1 = 0 makes m_hat equal the current gradient.",
+ "audience": "engineering undergraduate",
+ "excerpt": "At step t the algorithm receives the gradient g_t and updates exponential moving averages of the gradient and of the squared gradient: m_t = beta1 * m_(t-1) + (1 - beta1) * g_t and v_t = beta2 * v_(t-1) + (1 - beta2) * g_t^2, starting from m_0 = 0 and v_0 = 0. Because they start at zero, these estimates are biased towards zero during the first steps, so they are corrected: m_hat_t = m_t / (1 - beta1^t) and v_hat_t = v_t / (1 - beta2^t). The parameter is then updated by theta_t = theta_(t-1) - alpha * m_hat_t / (sqrt(v_hat_t) + epsilon). Good default settings are alpha = 0.001, beta1 = 0.9, beta2 = 0.999 and epsilon = 1e-8. The size of each step is roughly bounded by alpha, independent of the scale of the gradient."
+}

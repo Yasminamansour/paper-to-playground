@@ -12,7 +12,7 @@ import json
 from . import llm as llm_mod
 from .build import assemble_build, plan_brief, validate_build
 from .checks import run_checks, score
-from .plan import quotes_in_excerpt
+from .plan import pick_quotes, quotes_in_excerpt
 
 REPAIR_MAX_TOKENS = 3000
 MIN_TIME_FOR_REPAIR = 90  # seconds left before the soft deadline
@@ -67,6 +67,10 @@ def free_fixes(case, plan: dict, failures) -> tuple[dict, list[str]]:
         if missing:
             plan["grounding_quotes"] = found
             changed.append(f"dropped {len(missing)} quote(s) not found in the excerpt")
+        if not plan["grounding_quotes"]:
+            plan["grounding_quotes"] = pick_quotes(case.excerpt, plan)
+            if plan["grounding_quotes"]:
+                changed.append(f"picked {len(plan['grounding_quotes'])} sentence(s) from the excerpt")
     return plan, changed
 
 

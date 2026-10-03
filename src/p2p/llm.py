@@ -119,7 +119,10 @@ def build_body(messages, *, model, max_tokens, schema, purpose, cfg) -> dict:
     prov = {}
     if cfg.get("require_params"):
         prov["require_parameters"] = True
-    if cfg.get("provider_sort"):
+    if cfg.get("provider_order"):
+        prov["order"] = cfg["provider_order"]  # tried first; others still allowed as fallback
+        prov["allow_fallbacks"] = True
+    elif cfg.get("provider_sort"):
         prov["sort"] = cfg["provider_sort"]  # e.g. "throughput": prefer the fastest providers
     if prov:
         body["provider"] = prov

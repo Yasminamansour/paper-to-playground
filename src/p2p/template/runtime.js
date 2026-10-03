@@ -58,6 +58,11 @@
     if (typeof v !== 'number') v = Number(v);
     if (!isFinite(v)) return 'undefined (see note)';
     var d = dec === undefined ? DEC : dec;
+    var a = Math.abs(v);
+    if (a !== 0 && a < Math.pow(10, -d)) {  // too small for the fixed decimals: keep 3 significant digits
+      var t = a < 1e-4 ? v.toExponential(2) : String(+v.toPrecision(3));
+      return t;
+    }
     var s = v.toFixed(d);
     if (d > 0) s = s.replace(/\.?0+$/, '');
     if (s === '-0') s = '0';

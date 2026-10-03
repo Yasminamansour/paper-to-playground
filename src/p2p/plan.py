@@ -197,6 +197,23 @@ def answer_key(p: dict, ids: dict, out_keys: set, issues: list) -> dict:
     return stats
 
 
+def is_formula_like(q: str) -> bool:
+    """Mostly math (often garbled by copying), not a sentence: fewer than 4 real words, or symbols with few words."""
+    words = re.findall(r"[A-Za-z]{3,}", q)
+    has_math = bool(re.search(r"[=∑Σ√∫^_]", q))
+    return len(words) < 4 or (has_math and len(words) < 6)
+
+
+def pick_quotes(excerpt: str, plan: dict, n: int = 2) -> list[str]:
+    """Pick up to n real sentences from the excerpt (verbatim) that best match the concept."""
+    key = set(w.lower() for w in re.findall(r"[A-Za-z]{4,}", " ".join(
+        [plan.get("concept", ""), plan.get("why_it_matters", "")] + [o.get("meaning", "") for o in plan.get("outputs", [])])))
+    sents = [x.strip() for x in re.split(r"(?<=[.!?])\s+", re.sub(r"\s+", " ", excerpt)) if 40 <= len(x.strip()) <= 260]
+    sents = [x for x in sents if not is_formula_like(x)]
+    ranked = sorted(sents, key=lambda x: -len(key & set(w.lower() for w in re.findall(r"[A-Za-z]{4,}", x))))
+    return [x for x in ranked[:n] if key & set(w.lower() for w in re.findall(r"[A-Za-z]{4,}", x))]
+
+
 def quotes_in_excerpt(quotes, excerpt: str) -> tuple[list[str], list[str]]:
     """Split quotes into (found, missing) by exact substring match, ignoring whitespace runs."""
     norm = lambda s: re.sub(r"\s+", " ", s).strip()
@@ -268,7 +285,7 @@ def make_plan(case, *, model, budget, trace, chat=llm_mod.chat) -> tuple[dict, l
         except llm_mod.LLMError as e:
             trace.event("plan", "repair_result", "fail", error=f"{type(e).__name__}: {e}")
 
-    formula_like = [q for q in plan.get("grounding_quotes") or [] if re.search(r"[=∑Σ√∫]", q)]
+    formula_like = [q for q in plan.get("grounding_quotes") or [] if is_formula_like(q)]
     if formula_like:
         plan["grounding_quotes"] = [q for q in plan["grounding_quotes"] if q not in formula_like]
         trace.event("plan", "drop_formula_quotes", "info", dropped=len(formula_like))
@@ -276,6 +293,14 @@ def make_plan(case, *, model, budget, trace, chat=llm_mod.chat) -> tuple[dict, l
     if missing:
         # keep only verifiable quotes; the page must not show invented "quotes"
         plan["grounding_quotes"] = found
+    if case.excerpt and not plan["grounding_quotes"]:
+        plan["grounding_quotes"] = pick_quotes(case.excerpt, plan)
+        trace.event("plan", "pick_quotes", "info", picked=len(plan["grounding_quotes"]))
+    bad_inv = sorted({f.split(" @ ")[0] for f in plan.get("answer_key", {}).get("invariant_failures", [])})
+    if bad_inv:
+        # an invariant that fails on the reference is wrong or too strict: never show it as a live FAIL
+        plan["invariants"] = [i for i in plan.get("invariants", []) if i.get("name") not in bad_inv]
+        trace.event("plan", "drop_invariants", "info", dropped=bad_inv)
     trace.check("plan_quotes_verbatim", not missing, f"{len(found)} found, {len(missing)} dropped",
                 stage="plan", skipped=not case.excerpt)
     trace.check("plan_structure", not issues, issues[:8] or "ok", stage="plan")
