@@ -1,0 +1,256 @@
+{
+ "spec": {
+  "title": "Straight line <i>y</i> = <i>a</i>·<i>x</i> + <i>b</i> (template fixture)",
+  "subtitle": "Neutral demo used only to test the template. Not from any paper.",
+  "audience": "engineering undergraduates",
+  "decimals": 3,
+  "idea": {
+   "what": "A straight line is set by its slope <i>a</i> and intercept <i>b</i>.",
+   "equation": "<math display=\"block\"><mi>y</mi><mo>=</mo><mi>a</mi><mi>x</mi><mo>+</mo><mi>b</mi></math>",
+   "why": "Many relationships are linear over small ranges."
+  },
+  "symbols": [
+   {
+    "symbol": "a",
+    "meaning": "slope",
+    "units": "y per x"
+   },
+   {
+    "symbol": "b",
+    "meaning": "intercept: y when x = 0",
+    "units": "same as y"
+   },
+   {
+    "symbol": "x<sub>i</sub>",
+    "meaning": "sample inputs",
+    "units": "vector"
+   }
+  ],
+  "controls": [
+   {
+    "id": "a",
+    "kind": "slider",
+    "label": "Slope <i>a</i>",
+    "min": -3,
+    "max": 3,
+    "step": 0.1,
+    "default": 1,
+    "help": "Try 0 to make the line flat."
+   },
+   {
+    "id": "b",
+    "kind": "number",
+    "label": "Intercept <i>b</i>",
+    "min": -10,
+    "max": 10,
+    "step": 0.5,
+    "default": 0.5
+   },
+   {
+    "id": "abs",
+    "kind": "toggle",
+    "label": "Show grid line",
+    "default": true
+   },
+   {
+    "id": "mode",
+    "kind": "select",
+    "label": "Bar values",
+    "options": [
+     {
+      "value": "raw",
+      "label": "y as is"
+     },
+     {
+      "value": "abs",
+      "label": "|y|"
+     }
+    ],
+    "default": "raw"
+   },
+   {
+    "id": "xs",
+    "kind": "vector",
+    "label": "Sample x values",
+    "default": [
+     -2,
+     0,
+     1,
+     3
+    ],
+    "min": -5,
+    "max": 5,
+    "step": 1,
+    "min_len": 2,
+    "max_len": 6,
+    "share_len": "n"
+   },
+   {
+    "id": "w",
+    "kind": "prob",
+    "label": "Weights on the samples",
+    "default": [
+     0.25,
+     0.25,
+     0.25,
+     0.25
+    ],
+    "min_len": 2,
+    "max_len": 6,
+    "share_len": "n"
+   },
+   {
+    "id": "M",
+    "kind": "matrix",
+    "label": "Matrix <i>M</i>",
+    "default": [
+     [
+      1,
+      2
+     ],
+     [
+      0,
+      -1
+     ]
+    ],
+    "min": -9,
+    "max": 9,
+    "step": 1,
+    "min_rows": 1,
+    "max_rows": 4,
+    "row_labels": [
+     "r1",
+     "r2",
+     "r3",
+     "r4"
+    ],
+    "col_labels": [
+     "c1",
+     "c2"
+    ]
+   }
+  ],
+  "visuals": [
+   {
+    "kind": "line",
+    "title": "The line and the samples",
+    "x": "grid",
+    "series": [
+     {
+      "name": "y = a·x + b",
+      "data": "line"
+     }
+    ],
+    "points": [
+     {
+      "x": "root",
+      "y": 0,
+      "label": "root"
+     }
+    ],
+    "vlines": [
+     {
+      "x": 0,
+      "label": "x = 0"
+     }
+    ],
+    "x_label": "x",
+    "y_label": "y",
+    "caption": "Root at x = {outputs.root:2}"
+   },
+   {
+    "kind": "bar",
+    "title": "y at each sample",
+    "labels": "labels",
+    "data": "ys",
+    "y_label": "y"
+   },
+   {
+    "kind": "heatmap",
+    "title": "Matrix M",
+    "data": "M",
+    "decimals": 0
+   },
+   {
+    "kind": "matrix",
+    "title": "M times [1, 1]",
+    "data": "Mv"
+   },
+   {
+    "kind": "svg",
+    "title": "Diagram",
+    "width": 400,
+    "height": 120,
+    "items": [
+     {
+      "type": "box",
+      "x": 10,
+      "y": 40,
+      "w": "bw",
+      "h": 40,
+      "text": "a = {state.a:1}",
+      "tone": "accent"
+     },
+     {
+      "type": "arrow",
+      "x": 140,
+      "y": 60,
+      "x2": 240,
+      "y2": 60,
+      "text": "times x"
+     },
+     {
+      "type": "circle",
+      "x": 300,
+      "y": 60,
+      "r": 30,
+      "text": "{outputs.avg:2}",
+      "tone": "accent2"
+     }
+    ]
+   }
+  ],
+  "explorations": [
+   {
+    "title": "Flat line",
+    "change": "Set slope <i>a</i> to 0.",
+    "observe": "The line is flat and the root is undefined.",
+    "why": "With a = 0, y never changes, so it never crosses 0 unless b = 0.",
+    "preset": {
+     "a": 0
+    }
+   },
+   {
+    "title": "Uneven weights",
+    "change": "Put all weight on the last sample.",
+    "observe": "The weighted mean equals the last x.",
+    "why": "A weight of 1 on one item ignores the rest.",
+    "preset": {
+     "w": [
+      0,
+      0,
+      0,
+      1
+     ]
+    }
+   }
+  ],
+  "limitation": {
+   "kind": "assumption",
+   "text": "Real data is rarely exactly linear."
+  },
+  "grounding": {
+   "paper_title": "Template fixture (no paper)",
+   "section": "n/a",
+   "equation": "y = a·x + b",
+   "source_url": "none",
+   "from_excerpt": [
+    "(no excerpt: fixture)"
+   ],
+   "our_simplifications": [
+    "Everything here is a made-up example."
+   ]
+  }
+ },
+ "compute_js": "function compute(state) {\n  var a = state.a, b = state.b;\n  var xs = state.xs.slice();\n  var ys = xs.map(function (x) { return a * x + b; });\n  var grid = [], line = [];\n  for (var x = -5; x <= 5; x += 1) { grid.push(x); line.push(a * x + b); }\n  var w = state.w, s = 0;\n  for (var i = 0; i < w.length; i++) s += w[i];\n  var avg = 0;\n  for (var j = 0; j < w.length; j++) avg += (s > 0 ? w[j] / s : 0) * (xs[j] || 0);\n  var M = state.M, v = [1, 1];\n  var Mv = M.map(function (row) { return row.reduce(function (acc, m, k) { return acc + m * (v[k] || 0); }, 0); });\n  var root = a !== 0 ? -b / a : NaN;\n  var shown = state.mode === 'abs' ? ys.map(Math.abs) : ys;\n  return {\n    outputs: { xs: xs, ys: shown, grid: grid, line: line, root: root, avg: avg, M: M, Mv: Mv,\n               labels: xs.map(function (x) { return 'x=' + x; }), bw: 40 + 20 * Math.abs(a) },\n    intermediates: [\n      { label: 'slope a', value: a },\n      { label: 'intercept b', value: b },\n      { label: 'y values', value: ys },\n      { label: 'root x = -b/a', value: root, note: 'undefined when a = 0 (horizontal line)' },\n      { label: 'weighted mean of x', value: avg },\n      { label: 'M', value: M }\n    ],\n    checks: [\n      { label: 'y(0) equals b', pass: Math.abs((a * 0 + b) - b) < 1e-12, detail: 'y(0) = ' + b },\n      { label: 'weights sum to 1', pass: Math.abs(s - 1) < 1e-9, detail: 'sum = ' + s.toFixed(3) }\n    ]\n  };\n}\n"
+}

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+{{STYLE}}
+</style>
+</head>
+<body>
+<div id="error-box" class="error-box" role="alert" hidden></div>
+<main id="app" aria-live="off"><noscript><p>This page needs JavaScript to run the interactive parts.</p></noscript></main>
+<script type="application/json" id="spec">{{SPEC_JSON}}</script>
+<script>
+window.__p2pErrors = [];
+window.addEventListener('error', function (e) { window.__p2pErrors.push(String(e.message || e)); });
+</script>
+<script id="compute-code">
+{{COMPUTE_JS}}
+</script>
+<script>
+{{RUNTIME_JS}}
+</script>
+</body>
+</html>
