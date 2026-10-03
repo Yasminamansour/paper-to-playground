@@ -115,7 +115,25 @@ __g.compute = function (state) {
 """ % (compute_js, ",\n  ".join(inv_fns))
 
 
+URL_IN_TEXT = re.compile(r"(?:https?:)?//[A-Za-z0-9.-]+\.[A-Za-z]{2,}[^\s\"'<>)]*", re.I)
+
+
+def _strip_urls(obj, key=""):
+    """Remove URLs from generated text; the page may only show source_url (as plain text)."""
+    if isinstance(obj, dict):
+        return {k: (v if k == "source_url" else _strip_urls(v, k)) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_strip_urls(v, key) for v in obj]
+    if isinstance(obj, str):
+        return URL_IN_TEXT.sub("", obj)
+    return obj
+
+
 def make_spec(case, plan: dict, b: dict) -> dict:
+    return _strip_urls(_make_spec(case, plan, b))
+
+
+def _make_spec(case, plan: dict, b: dict) -> dict:
     src = plan.get("source") or {}
     return {
         "title": b.get("title") or plan.get("concept") or "Interactive explanation",
@@ -161,6 +179,47 @@ def validate_build(b: dict) -> list[str]:
     return issues
 
 
+def assemble_build(case, plan: dict, b: dict) -> dict:
+    """Turn a raw build answer into everything the page and the checks need."""
+    return {"raw": b, "spec": make_spec(case, plan, b), "compute_js": b["compute_js"],
+            "page_js": checks_wrapper(b["compute_js"], plan.get("invariants"))}
+
+
+def fallback_build(plan: dict) -> dict:
+    """No model call: a plain but working page that runs the plan's reference function.
+    Used when the BUILD call fails, so the run still produces a usable page."""
+    call = plan.get("reference_call") or {"name": "reference", "params": ["state"]}
+    args = "state" if call["params"] == ["state"] else ", ".join(f"state[{json.dumps(p)}]" for p in call["params"])
+    shows = plan.get("must_show_intermediates") or [o["key"] for o in plan.get("outputs", [])]
+    meaning = {o["key"]: o.get("meaning", "") for o in plan.get("outputs", [])}
+    compute_js = (plan.get("reference_js", "") + "\nfunction compute(state) {\n"
+                  f"  var out = {call['name']}({args});\n"
+                  f"  var show = {json.dumps(shows)};\n  var notes = {json.dumps(meaning)};\n"
+                  "  return { outputs: out, intermediates: show.filter(function (k) { return k in out; })"
+                  ".map(function (k) { return { label: k, value: out[k], note: notes[k] || '' }; }) };\n}")
+    visuals = []
+    sample = {}
+    try:
+        from .jsengine import call_fn
+        sample = call_fn(compute_js, "compute", {s["id"]: s.get("default") for s in plan.get("state", [])}).get("outputs", {})
+    except Exception:  # noqa: BLE001 - a fallback must never crash
+        pass
+    for o in plan.get("outputs", []):
+        v = sample.get(o["key"])
+        if isinstance(v, list) and v and isinstance(v[0], list):
+            visuals.append({"kind": "heatmap", "title": o["key"], "data": o["key"], "caption": o.get("meaning", "")})
+        elif isinstance(v, list) and v and all(isinstance(x, (int, float)) for x in v):
+            visuals.append({"kind": "bar", "title": o["key"], "data": o["key"], "caption": o.get("meaning", "")})
+    if not visuals:
+        keys = [o["key"] for o in plan.get("outputs", []) if isinstance(sample.get(o["key"]), (int, float))]
+        visuals.append({"kind": "bar", "title": "Results", "data": "__values", "labels": "__names", "caption": ""})
+        compute_js = compute_js.replace("return { outputs: out,", "out.__values = %s.map(function (k) { return out[k]; });"
+                                        " out.__names = %s;\n  return { outputs: out," % (json.dumps(keys), json.dumps(keys)))
+    return {"title": plan.get("concept") or "Interactive explanation", "subtitle": "",
+            "idea": {"what": plan.get("concept", ""), "equation": "", "why": plan.get("why_it_matters", "")},
+            "playground_intro": "", "controls": [], "visuals": visuals[:3], "compute_js": compute_js}
+
+
 def build(case, plan: dict, *, model, budget, trace, chat=llm_mod.chat) -> dict:
     messages = [{"role": "system", "content": BUILD_SYSTEM},
                 {"role": "user", "content": build_user(case.focus, case.audience, plan_brief(plan))}]
@@ -178,9 +237,8 @@ def build(case, plan: dict, *, model, budget, trace, chat=llm_mod.chat) -> dict:
     trace.check("build_compute_valid", not issues, issues or "ok", stage="build")
     if any("compute_js" in i for i in issues):
         raise BuildError("; ".join(issues))
-    spec = make_spec(case, plan, b)
-    result = {"raw": b, "spec": spec, "compute_js": b["compute_js"],
-              "page_js": checks_wrapper(b["compute_js"], plan.get("invariants"))}
+    result = assemble_build(case, plan, b)
+    spec = result["spec"]
     trace.event("build", "build_summary", "info", n_controls=len(spec["controls"]),
                 n_visuals=len(spec["visuals"]), visual_kinds=[v["kind"] for v in spec["visuals"]],
                 compute_chars=len(b["compute_js"]))

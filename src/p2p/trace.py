@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -43,6 +44,7 @@ class Trace:
         self.path = Path(out_dir) / "trace.jsonl"
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._f = open(self.path, "w", encoding="utf-8", newline="\n")
+        self._lock = threading.Lock()  # the watchdog thread may write the final lines
         self.calls = 0
         self.checks_passed = 0
         self.checks_failed = 0
@@ -62,8 +64,10 @@ class Trace:
             "result": result,
         }
         ev.update(redact(extra))
-        self._f.write(json.dumps(ev, ensure_ascii=False, default=str) + "\n")
-        self._f.flush()
+        with self._lock:
+            if not self._f.closed:
+                self._f.write(json.dumps(ev, ensure_ascii=False, default=str) + "\n")
+                self._f.flush()
         return ev
 
     def llm_call(self, *, stage: str, call_index: int, purpose: str, model: str, ok: bool,
@@ -94,9 +98,9 @@ class Trace:
             self.checks_failed += 1
         return self.event(stage, f"check:{name}", "ok" if passed else "fail", detail=detail, **extra)
 
-    def revision(self, round: int, targets, reason: str, stage: str = "repair") -> dict:
+    def revision(self, round: int, targets, reason: str, stage: str = "repair", **extra) -> dict:
         self.revisions += 1
-        return self.event(stage, "revision", "info", round=round, targets=list(targets), reason=reason)
+        return self.event(stage, "revision", "info", round=round, targets=list(targets), reason=reason, **extra)
 
     def summary(self, totals: dict, ok: bool, exit_code: int) -> dict:
         return self.event("summary", "finish", "ok" if ok else "fail", exit_code=exit_code,
@@ -104,5 +108,6 @@ class Trace:
                           checks_failed=self.checks_failed, revisions=self.revisions, **totals)
 
     def close(self):
-        if not self._f.closed:
-            self._f.close()
+        with self._lock:
+            if not self._f.closed:
+                self._f.close()
